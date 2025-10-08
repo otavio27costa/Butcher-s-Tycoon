@@ -13,9 +13,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI numLife;
     [SerializeField] private float gameTime;
     [SerializeField] private int numbLife;
+    [SerializeField] private int coinForPoint;
+    [SerializeField] private int earnedMoney;
+    [SerializeField] private TextMeshProUGUI earnedMoneyText;
 
+    private bool gameEnded = false;
     private int score;
     private float timeRemain;
+    [SerializeField] private GameObject gameOverPanel;
 
     private void Awake()
     {
@@ -27,21 +32,20 @@ public class GameManager : MonoBehaviour
         timeRemain = gameTime;
         score = 0;
         UpdateUI();
+        gameOverPanel.SetActive(false);
     }
 
     private void Update()
     {
-        timeRemain -= Time.deltaTime;
-        if(timeRemain <= 0)
-        {
-            EndGame();
-        }
+        if(gameEnded) return;
 
-        if(numbLife <= 0)
+        timeRemain -= Time.deltaTime;
+        if(timeRemain <= 0 || numbLife <= 0)
         {
             timeRemain = 0;
             EndGame();
         }
+
         UpdateUI();
     }
 
@@ -65,8 +69,17 @@ public class GameManager : MonoBehaviour
 
     public void EndGame()
     {
-        Debug.Log($"O jogo acabou!! Sua pontuacao: {score}");
+        if(gameEnded) return;
+        gameEnded = true;
+
+        gameOverPanel.SetActive(true);
         Time.timeScale = 0;
+        timeRemain = 0;
+        Debug.Log("jogo acabou");
+        earnedMoney = score * coinForPoint;
+
+        earnedMoneyText.text = $"Voce ganhou {earnedMoney} moedas!!";
+        PlayerData.instance.AddMoney(earnedMoney);
     }
 
 }
