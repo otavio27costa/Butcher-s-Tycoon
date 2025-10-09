@@ -971,7 +971,7 @@ MonoBehaviour:
   scoreText: {fileID: 240843642}
   timerText: {fileID: 303239721}
   numLife: {fileID: 1357391748}
-  gameTime: 3
+  gameTime: 30
   numbLife: 3
   coinForPoint: 1
   earnedMoney: 0

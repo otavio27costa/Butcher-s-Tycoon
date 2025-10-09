@@ -45,7 +45,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9aaaf468eca773945be673d17f8a77c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: bancada
   width: 2
   height: 1
 --- !u!1 &8630330718504113886
@@ -141,7 +140,7 @@ BoxCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8630330718504113886}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -191,6 +190,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9aaaf468eca773945be673d17f8a77c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: 
   width: 2
   height: 1

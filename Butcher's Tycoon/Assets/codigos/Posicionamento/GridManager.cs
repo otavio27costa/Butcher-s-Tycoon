@@ -17,7 +17,7 @@ public class GridManager : MonoBehaviour
     private GameObject itemToPlacePrefab;
     private GameObject previewItem;
     private Item itemToPlace;
-
+    private int selectedItemPrice;
 
     private Dictionary<Vector2, Tile> _tiles;
 
@@ -92,8 +92,13 @@ public class GridManager : MonoBehaviour
 
     }
 
-    void CancelSelection()
+    public void CancelSelection()
     {
+        if(itemToPlace != null)
+        {
+            PlayerData.instance.AddMoney(selectedItemPrice);
+        }
+
         if(previewItem != null)
         {
             Destroy(previewItem.gameObject);
@@ -176,9 +181,10 @@ public class GridManager : MonoBehaviour
 
 
 
-    public void SelectItem(Item itemPreFab)
+    public void SelectItem(Item itemPreFab, int price)
     {
         itemToPlace = itemPreFab;
+        selectedItemPrice = price;
     }
 
     private List<Tile> CheckTilesForItem(Vector2Int baseGridPos, int w, int h, out bool canPlace)
