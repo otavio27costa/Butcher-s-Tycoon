@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Maquina
   itemPrice: 200
-  itemPreFab: {fileID: 5391185562438271954, guid: 0c869c765aa913544833eccfef3ca755, type: 3}
+  itemPreFab: {fileID: 4964902961591600871, guid: 0c869c765aa913544833eccfef3ca755, type: 3}
   icon: {fileID: 0}
+  itemID: 2

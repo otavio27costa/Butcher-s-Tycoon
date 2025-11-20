@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Bancada
   itemPrice: 100
-  itemPreFab: {fileID: -241461888697787635, guid: 7c286d2ca9b5d39459f8554b052fe7fb, type: 3}
-  icon: {fileID: 0}
+  itemPreFab: {fileID: 1193092181382258, guid: 7c286d2ca9b5d39459f8554b052fe7fb, type: 3}
+  icon: {fileID: 21300000, guid: d4d45189f610fab4db47b864470472be, type: 3}
+  itemID: 1

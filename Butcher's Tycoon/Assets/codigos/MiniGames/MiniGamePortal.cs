@@ -5,20 +5,35 @@ using UnityEngine.SceneManagement;
 
 public class MiniGamePortal : MonoBehaviour
 {
-    [SerializeField] string miniGameName;
-    public bool isNear = false;
+    private bool inside = false;
+    public string miniGame;
 
-    void Update()
+    private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.E) && isNear)
+        if (Input.GetKeyDown(KeyCode.E) && inside)
         {
-            SceneManager.LoadScene(miniGameName);
+            // carregar cena additive
+            SceneManager.LoadScene(miniGame, LoadSceneMode.Additive);
+
+            // Pausar o tycoon (opcional)
+            Time.timeScale = 1;
         }
     }
 
-    void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerEnter2D(Collider2D other)
     {
-        isNear = true;
+        if (other.CompareTag("Player"))
+        {
+            inside = true;
+        }
     }
 
+    public void Leave()
+    {
+        // Remover apenas o minigame
+        SceneManager.UnloadSceneAsync(miniGame);
+
+        // Voltar o tempo à normalidade
+        Time.timeScale = 1;
+    }
 }

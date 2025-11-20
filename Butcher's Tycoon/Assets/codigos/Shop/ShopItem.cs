@@ -9,6 +9,7 @@ public class ShopItem : ScriptableObject
 {
     public string itemName;
     public int itemPrice;
-    [SerializeField] public Item itemPreFab;
+    [SerializeField] public GameObject itemPreFab;
     public Sprite icon;
+    public string itemID;
 }

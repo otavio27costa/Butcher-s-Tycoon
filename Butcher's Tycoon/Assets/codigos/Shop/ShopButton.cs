@@ -30,8 +30,8 @@ public class ShopButton : MonoBehaviour
 
         if(PlayerData.instance.money >= currentItem.itemPrice)
         {
-            PlayerData.instance.AddMoney(-currentItem.itemPrice);
-            GridManager.Instance.SelectItem(currentItem.itemPreFab, currentItem.itemPrice);
+            PlayerData.instance.AddMoney(currentItem.itemPrice);
+            GridManager.Instance.SelectItem(currentItem.itemPreFab.gameObject.GetComponent<Item>(), currentItem.itemPrice);
         }
     }
 }

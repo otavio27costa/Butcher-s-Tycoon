@@ -20,7 +20,8 @@ public class GameManager : MonoBehaviour
     private bool gameEnded = false;
     private int score;
     private float timeRemain;
-    [SerializeField] private GameObject gameOverPanel;
+    public Lootbox lootbox;
+    public LootBoxUI lootBoxUI;
 
     private void Awake()
     {
@@ -32,7 +33,6 @@ public class GameManager : MonoBehaviour
         timeRemain = gameTime;
         score = 0;
         UpdateUI();
-        gameOverPanel.SetActive(false);
     }
 
     private void Update()
@@ -72,14 +72,15 @@ public class GameManager : MonoBehaviour
         if(gameEnded) return;
         gameEnded = true;
 
-        gameOverPanel.SetActive(true);
-        Time.timeScale = 0;
         timeRemain = 0;
-        Debug.Log("jogo acabou");
         earnedMoney = score * coinForPoint;
+        LootReward reward = LootBoxSystem.GetRewardByScore(lootbox,score);
 
-        earnedMoneyText.text = $"Voce ganhou {earnedMoney} moedas!!";
-        PlayerData.instance.AddMoney(earnedMoney);
+        lootBoxUI.ShowReward(reward);
+        
+
+
+        Time.timeScale = 0;
     }
 
 }

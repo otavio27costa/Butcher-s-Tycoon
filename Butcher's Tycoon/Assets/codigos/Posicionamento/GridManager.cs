@@ -1,13 +1,15 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 public class GridManager : MonoBehaviour
 {
     public static GridManager Instance { get; private set; }
 
-    [SerializeField] private int _width, _height;
+    [SerializeField] public int width;
+    [SerializeField] public int height;
 
     [SerializeField] private Tile _tilePrefab;
 
@@ -29,6 +31,7 @@ public class GridManager : MonoBehaviour
     void Start()
     {
         GenerateGrid();
+        Time.timeScale = 1.0f;
     }
 
     void Update()
@@ -83,10 +86,12 @@ public class GridManager : MonoBehaviour
             if (canPlace)
                 {
                     PlaceItemAt(gridPos, tilesToOccupy);
-                }
+
+
+            }
             else
             {
-                Debug.Log("[GridManager] Espa�o ocupado ou fora do grid - n�o � poss�vel posicionar.");
+                Debug.Log("[GridManager] Espaço ocupado ou fora do grid - não é possível posicionar.");
             }
         }
 
@@ -121,43 +126,101 @@ public class GridManager : MonoBehaviour
 
     public void PlaceItemAt(Vector2Int gridPos, List<Tile> tilesToOccupy)
     {
-        if(tilesToOccupy == null || tilesToOccupy.Count == 0) return;
+        // segurança: argumentos
+        if (tilesToOccupy == null || tilesToOccupy.Count == 0)
+        {
+            Debug.LogWarning("[GridManager] PlaceItemAt chamado com tilesToOccupy nulo ou vazio.");
+            return;
+        }
+
+        if (itemToPlace == null)
+        {
+            Debug.LogError("[GridManager] PlaceItemAt: itemToPlace é null. Não há item selecionado para colocar.");
+            return;
+        }
 
         Tile baseTile = GetTileAtPosition(gridPos);
+        if (baseTile == null)
+        {
+            Debug.LogError($"[GridManager] PlaceItemAt: baseTile é null para gridPos {gridPos}. Verifique GetTileAtPosition ou baseGridPos.");
+            return;
+        }
+
+        // calcula posição do mundo
         Vector3 offset = new Vector3((itemToPlace.width - 1) * 0.5f, (itemToPlace.height - 1) * 0.5f, 0f);
         Vector3 worldPos = baseTile.transform.position + offset;
 
-        GameObject placedGO = Instantiate(itemToPlace.gameObject, worldPos, Quaternion.identity);
+        // instanciar
+        if (itemToPlace.gameObject == null)
+        {
+            Debug.LogError("[GridManager] PlaceItemAt: prefab do itemToPlace.gameObject é null!");
+            return;
+        }
 
+        GameObject placedGO = Instantiate(itemToPlace.gameObject, worldPos, Quaternion.identity);
+        if (placedGO == null)
+        {
+            Debug.LogError("[GridManager] PlaceItemAt: falha ao instanciar o prefab.");
+            return;
+        }
 
         Item placedItem = placedGO.GetComponent<Item>();
-
-        if(placedItem == null)
+        if (placedItem == null)
         {
+            Debug.LogError("[GridManager] PlaceItemAt: o prefab instanciado NÃO tem componente Item.");
             Destroy(placedGO);
             return;
         }
 
+        // marca cada tile (verificando cada tile)
         foreach (Tile t in tilesToOccupy)
         {
+            if (t == null)
+            {
+                Debug.LogWarning("[GridManager] PlaceItemAt: um dos tilesToOccupy é null — pulando.");
+                continue;
+            }
             t.SetItem(placedItem);
         }
 
-        if(placedGO != null)
+        // salvar (se existir BuildSaveSystem)
+        Vector3 placedPos = placedGO.transform.position;
+        Quaternion placedRot = placedGO.transform.rotation;
+
+        if (BuildSaveSystem.instance != null)
+        {
+            // certifique-se que placedItem tem itemID (string não nula)
+            string id = (placedItem.itemID != null) ? placedItem.itemID : string.Empty;
+            if (string.IsNullOrEmpty(id))
+                Debug.LogWarning("[GridManager] PlaceItemAt: placedItem.itemID vazio. Salvo com ID vazio.");
+
+            BuildSaveSystem.instance.SaveItem(id, placedPos, placedRot);
+        }
+        else
+        {
+            Debug.LogWarning("[GridManager] BuildSaveSystem.instance é null — item NÃO foi salvo.");
+        }
+
+        // cleanup do preview
+        if (previewItem != null)
         {
             Destroy(previewItem);
             previewItem = null;
         }
+
+        // reset seleção
         itemToPlace = null;
         itemToPlacePrefab = null;
+
+        Debug.Log("[GridManager] Item colocado com sucesso em " + worldPos);
     }
 
     void GenerateGrid()
     {
         _tiles = new Dictionary<Vector2, Tile>();
-        for (int x = 0; x < _width; x++)
+        for (int x = 0; x < width; x++)
         {
-            for (int y = 0; y < _height; y++)
+            for (int y = 0; y < height; y++)
             {
                 var spawnedTile = Instantiate(_tilePrefab, new Vector3(x, y), Quaternion.identity);
                 spawnedTile.name = $"Tile {x} {y}";
@@ -170,7 +233,7 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        _cam.transform.position = new Vector3((float)_width / 2 - 0.5f, (float)_height / 2 - 0.5f, -10);
+        _cam.transform.position = new Vector3((float)width / 2 - 0.5f, (float)height / 2 - 0.5f, -10);
     }
 
     public Tile GetTileAtPosition(Vector2 pos)
@@ -183,11 +246,11 @@ public class GridManager : MonoBehaviour
 
     public void SelectItem(Item itemPreFab, int price)
     {
-        itemToPlace = itemPreFab;
+        itemToPlace = itemPreFab.gameObject.GetComponent<Item>();
         selectedItemPrice = price;
     }
 
-    private List<Tile> CheckTilesForItem(Vector2Int baseGridPos, int w, int h, out bool canPlace)
+    public List<Tile> CheckTilesForItem(Vector2Int baseGridPos, int w, int h, out bool canPlace)
     {
         List<Tile> list = new List<Tile>();
         canPlace = true;

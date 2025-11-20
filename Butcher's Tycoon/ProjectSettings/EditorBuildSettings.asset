@@ -11,4 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MeatCutter.unity
     guid: 5ecbeb2e72c4c774fb137c3b95db6c55
+  - enabled: 0
+    path: Assets/Scenes/LootBox.unity
+    guid: a4ab11154bd4bd441b1c24d79ca6a43a
   m_configObjects: {}

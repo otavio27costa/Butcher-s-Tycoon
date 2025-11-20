@@ -179,6 +179,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 3
   height: 1
+  itemID: maq_1
 --- !u!114 &2967358575640937279
 MonoBehaviour:
   m_ObjectHideFlags: 0
