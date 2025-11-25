@@ -13,6 +13,7 @@ public class LootBoxUI : MonoBehaviour
     public GameObject panel;
 
     private LootReward reward;
+    public string miniGameName;
 
     public void ShowReward(LootReward r)
     {
@@ -29,10 +30,7 @@ public class LootBoxUI : MonoBehaviour
 
     public void Close()
     {
-        // Remover apenas o minigame
-        SceneManager.UnloadSceneAsync("MinigameScene");
-
-        // Voltar o tempo à normalidade
-        Time.timeScale = 1;
+        SceneController.instance.CloseMinigame(miniGameName);
+        panel.SetActive(false);
     }
 }

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3612052999720745338}
   - component: {fileID: 6287626080598146416}
   m_Layer: 0
-  m_Name: CarneBoa 1
+  m_Name: Carne
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

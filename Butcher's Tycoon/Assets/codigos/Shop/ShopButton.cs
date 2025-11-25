@@ -16,7 +16,7 @@ public class ShopButton : MonoBehaviour
     public void Setup(ShopItem item)
     {
         currentItem = item;
-        //iconImage.sprite = item.icon;
+        iconImage.sprite = item.icon;
         nameText.text = item.name;
         priceText.text = item.itemPrice.ToString() + " $";
 
@@ -26,12 +26,14 @@ public class ShopButton : MonoBehaviour
 
     public void OnBuyButtonClicked()
     {
+        
         if(currentItem == null) return;
 
-        if(PlayerData.instance.money >= currentItem.itemPrice)
+        if(PlayerData.instance.money >= currentItem.itemPrice && currentItem.currentQnt <= currentItem.maxItem)
         {
-            PlayerData.instance.AddMoney(currentItem.itemPrice);
+            PlayerData.instance.RemoveMoney(currentItem.itemPrice);
             GridManager.Instance.SelectItem(currentItem.itemPreFab.gameObject.GetComponent<Item>(), currentItem.itemPrice);
+            currentItem.currentQnt++;
         }
     }
 }

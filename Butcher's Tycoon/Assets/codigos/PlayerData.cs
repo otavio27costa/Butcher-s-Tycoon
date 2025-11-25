@@ -20,8 +20,6 @@ public class PlayerData : MonoBehaviour
 
         instance = this;
         DontDestroyOnLoad(gameObject);       
-
-        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     public void Update()
@@ -34,23 +32,16 @@ public class PlayerData : MonoBehaviour
         money += amount;
     }
 
+    public void RemoveMoney(int amount)
+    {
+        money -= amount;
+    }
+
     public void UpdateMoneyUI()
     {
         if(moneyText != null)
         {
             moneyText.text = "Moedas: " + money;
-        }
-    }
-
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        if (scene.name != "Tycoon")
-        {
-            moneyText.gameObject.SetActive(false);
-        }
-        else
-        {
-            moneyText.gameObject.SetActive(true);
         }
     }
 }

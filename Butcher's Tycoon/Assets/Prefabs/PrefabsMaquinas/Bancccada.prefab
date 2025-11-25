@@ -109,7 +109,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bbb87b191e0c004ca714a6fad680fad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  miniGame: MeatCutter
+  miniGameName: MeatCutter
 --- !u!1 &3764679377913062606
 GameObject:
   m_ObjectHideFlags: 0

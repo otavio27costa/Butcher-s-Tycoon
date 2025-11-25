@@ -12,4 +12,6 @@ public class ShopItem : ScriptableObject
     [SerializeField] public GameObject itemPreFab;
     public Sprite icon;
     public string itemID;
+    public int maxItem;
+    public int currentQnt;
 }

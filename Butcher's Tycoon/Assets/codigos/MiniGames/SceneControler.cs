@@ -7,26 +7,10 @@ using UnityEngine.SceneManagement;
 public class SceneController : MonoBehaviour
 {
 
-    public string miniGameName;
     public static SceneController instance;
-    public bool isNear = false;
+    
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.E) && isNear)
-        {
-            EnterMinigame();
-            LoadMinigameRoutine();
-        }
-    }
-
-    void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.CompareTag("Player"))
-        {
-            isNear = true;
-        }     
-    }
+    private List<GameObject> tycoonRoots = new List<GameObject>();
 
     private void Awake()
     {
@@ -35,39 +19,35 @@ public class SceneController : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         instance = this;
         DontDestroyOnLoad(gameObject);
     }
 
-    public void EnterMinigame()
+    public void OpenMinigame(string miniGameSceneName)
     {
-        StartCoroutine(LoadMinigameRoutine());
-    }
+        // SALVA todos os objetos raiz da cena do Tycoon
+        var roots = SceneManager.GetActiveScene().GetRootGameObjects();
+        tycoonRoots.Clear();
+        tycoonRoots.AddRange(roots);
 
-    IEnumerator LoadMinigameRoutine()
-    {
-        // desativar Tycoon
-        Scene tycoon = SceneManager.GetSceneByName("Tycoon");
-        foreach (var obj in tycoon.GetRootGameObjects())
+        // DESATIVA tudo da cena do Tycoon
+        foreach (var obj in tycoonRoots)
             obj.SetActive(false);
 
-        // carregar minigame additive
-        yield return SceneManager.LoadSceneAsync(miniGameName, LoadSceneMode.Additive);
+        // Carrega o minigame por cima
+        SceneManager.LoadScene(miniGameSceneName, LoadSceneMode.Additive);
     }
 
-    public void ExitMinigame()
+    public void CloseMinigame(string miniGameSceneName)
     {
-        StartCoroutine(UnloadMinigameRoutine());
-    }
+        // Fecha o minigame
+        SceneManager.UnloadSceneAsync(miniGameSceneName);
 
-    IEnumerator UnloadMinigameRoutine()
-    {
-        // descarrega minigame
-        yield return SceneManager.UnloadSceneAsync(miniGameName);
-
-        // reativa Tycoon
-        Scene tycoon = SceneManager.GetSceneByName("Tycoon");
-        foreach (var obj in tycoon.GetRootGameObjects())
+        // REATIVA a cena do Tycoon intacta
+        foreach (var obj in tycoonRoots)
             obj.SetActive(true);
+
+      
     }
 }

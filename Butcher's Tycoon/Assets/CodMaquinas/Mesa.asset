@@ -17,3 +17,4 @@ MonoBehaviour:
   itemPreFab: {fileID: 8634755954099352743, guid: 5c411b3d21cc23646b3c048a5eb55b7b, type: 3}
   icon: {fileID: 0}
   itemID: 3
+  maxItem: 2

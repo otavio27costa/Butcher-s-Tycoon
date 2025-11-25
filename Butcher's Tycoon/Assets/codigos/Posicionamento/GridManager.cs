@@ -86,8 +86,6 @@ public class GridManager : MonoBehaviour
             if (canPlace)
                 {
                     PlaceItemAt(gridPos, tilesToOccupy);
-
-
             }
             else
             {

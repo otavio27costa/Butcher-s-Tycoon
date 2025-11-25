@@ -6,17 +6,14 @@ using UnityEngine.SceneManagement;
 public class MiniGamePortal : MonoBehaviour
 {
     private bool inside = false;
-    public string miniGame;
+    public string miniGameName;
+    public GameObject lootPanel;
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.E) && inside)
         {
-            // carregar cena additive
-            SceneManager.LoadScene(miniGame, LoadSceneMode.Additive);
-
-            // Pausar o tycoon (opcional)
-            Time.timeScale = 1;
+            SceneController.instance.OpenMinigame(miniGameName);
         }
     }
 
@@ -30,10 +27,8 @@ public class MiniGamePortal : MonoBehaviour
 
     public void Leave()
     {
-        // Remover apenas o minigame
-        SceneManager.UnloadSceneAsync(miniGame);
-
-        // Voltar o tempo à normalidade
         Time.timeScale = 1;
+        //lootPanel.SetActive(false);
+        SceneController.instance.CloseMinigame(miniGameName);
     }
 }
