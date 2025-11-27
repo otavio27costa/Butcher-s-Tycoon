@@ -4,4 +4,5 @@
 - Active game object:
   - Name: Bancccada
   - Tag: Maquina
+  - Layer: Default
 <!-- UNITY CODE ASSIST INSTRUCTIONS END -->
