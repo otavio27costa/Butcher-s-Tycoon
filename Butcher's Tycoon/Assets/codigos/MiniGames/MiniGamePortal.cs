@@ -19,24 +19,6 @@ public class MiniGamePortal : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            inside = true;
-            textPanel.text = "Pressione 'E' para entrar no " + miniGameName;
-        }
-    }
-
-    private void OnTriggerExit2D(Collider2D other)
-    {
-        if (other.CompareTag("Player"))
-        {
-            UIInteractMessage.Instance.HideMessage();
-            textPanel.text = "";
-        }
-    }
-
     public void Leave()
     {
         Time.timeScale = 1;

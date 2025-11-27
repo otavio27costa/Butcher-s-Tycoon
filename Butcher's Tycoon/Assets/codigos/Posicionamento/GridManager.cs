@@ -8,18 +8,20 @@ public class GridManager : MonoBehaviour
 {
     public static GridManager Instance { get; private set; }
 
-    [SerializeField] public int width;
-    [SerializeField] public int height;
-
+    [Header("Grid")]
+    public int width;
+    public int height;
     [SerializeField] private Tile _tilePrefab;
-
     [SerializeField] private Transform _cam;
-    [Header("Itens")]
 
-    private GameObject itemToPlacePrefab;
-    private GameObject previewItem;
-    private Item itemToPlace;
+    [Header("Item System")]
+    private Item itemToPlace;               // item para colocar (novo OU reposicionado)
+    private GameObject previewItem;         // preview visual
     private int selectedItemPrice;
+
+    // Item já colocado que está sendo reposicionado
+    private Item selectedPlacedItem = null;
+    private List<Tile> selectedItemTiles = new List<Tile>();
 
     private Dictionary<Vector2, Tile> _tiles;
 
@@ -27,247 +29,281 @@ public class GridManager : MonoBehaviour
     {
         Instance = this;
     }
-
-    void Start()
+    public bool IsPlacingNewItem()
+    {
+        return itemToPlace != null;
+    }
+    private void Start()
     {
         GenerateGrid();
-        Time.timeScale = 1.0f;
+        Time.timeScale = 1f;
     }
 
-    void Update()
+    private void Update()
     {
-            
+        HandlePlacementUpdate();
+    }
+
+    // ========== SISTEMA DE SELEÇÃO DE ITENS (LOJA) ==========
+    public void SelectItem(Item prefabItem, int price)
+    {
+        CancelSelection();
+
+        // Guardar o prefab real (SEM instanciar ainda)
+        itemToPlace = prefabItem;
+        selectedItemPrice = price;
+
+        // Criar preview SEPARADO com cor alterada
+        previewItem = Instantiate(prefabItem.gameObject);
+        DisableColliders(previewItem);
+        SetPreviewColor(previewItem, new Color(1, 1, 1, 0.5f));
+    }
+
+    // ========== SISTEMA DE REPOSICIONAR ITEM ==========
+    public void SelectPlacedItem(Item placed)
+    {
+        if (itemToPlace != null) return; // impedindo conflito com loja
+
+        selectedPlacedItem = placed;
+        selectedItemTiles.Clear();
+
+        // pega todos os tiles ocupados
+        foreach (var t in _tiles.Values)
+            if (t.placedItem == placed)
+                selectedItemTiles.Add(t);
+
+        // libera tiles
+        foreach (var t in selectedItemTiles)
+            t.ClearItem();
+
+        // cria o preview
+        previewItem = Instantiate(placed.gameObject);
+        DisableColliders(previewItem);
+        SetPreviewColor(previewItem, new Color(1, 1, 1, 0.5f));
+
+        // esconde o item real
+        placed.gameObject.SetActive(false);
+
+        itemToPlace = placed;
+        ItemSelectionUI.Instance.Close();
+    }
+
+    // ========== VENDA ==========
+    public void SellSelectedItem()
+    {
+        if (selectedPlacedItem == null) return;
+
+        foreach (var t in selectedItemTiles)
+            t.ClearItem();
+
+        PlayerData.instance.AddMoney(selectedPlacedItem.sellValue);
+
+        Destroy(selectedPlacedItem.gameObject);
+        selectedPlacedItem = null;
+        selectedItemTiles.Clear();
+
+        CancelSelection();
+        ItemSelectionUI.Instance.Close();
+    }
+
+    // ========== CANCELAR ==========
+    public void CancelSelection()
+    {
+        if (selectedPlacedItem != null)
+        {
+            // volta o item para os tiles antigos
+            foreach (var t in selectedItemTiles)
+                t.SetItem(selectedPlacedItem);
+
+            selectedPlacedItem.gameObject.SetActive(true);
+            selectedPlacedItem = null;
+            selectedItemTiles.Clear();
+        }
+
+        if (previewItem != null)
+            Destroy(previewItem);
+
+        previewItem = null;
+        itemToPlace = null;
+        ItemSelectionUI.Instance.Close();
+    }
+
+    // ========== SISTEMA DE POSICIONAMENTO ==========
+    private void HandlePlacementUpdate()
+    {
+        if (itemToPlace == null) return;
+
+        // ESC cancela
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             CancelSelection();
             return;
         }
 
-        if (itemToPlace == null) return;
-
+        // calcula tile atual
         Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mouseWorld.z = 0;
-        Vector2Int gridPos = new Vector2Int(Mathf.RoundToInt(mouseWorld.x), Mathf.RoundToInt(mouseWorld.y));
+
+        Vector2Int gridPos = new Vector2Int(
+            Mathf.RoundToInt(mouseWorld.x),
+            Mathf.RoundToInt(mouseWorld.y)
+        );
 
         Tile hoveredTile = GetTileAtPosition(gridPos);
 
-        if (hoveredTile== null)
+        if (hoveredTile == null)
         {
-            if(previewItem != null)
-            {
-                Destroy(previewItem);
-                previewItem = null;
-            }
+            previewItem.SetActive(false);
             return;
         }
 
+        previewItem.SetActive(true);
+
         bool canPlace;
-        List<Tile> tilesToOccupy = CheckTilesForItem(gridPos, itemToPlace.width, itemToPlace.height, out canPlace);
+        List<Tile> tiles = CheckTilesForItem(
+            gridPos,
+            itemToPlace.width,
+            itemToPlace.height,
+            out canPlace
+        );
 
+        // move preview
+        MovePreview(hoveredTile, itemToPlace);
 
-       
+        // cor
+        SetPreviewColor(previewItem, canPlace ?
+            new Color(0.5f, 1f, 0.5f, 0.6f) :
+            new Color(1f, 0.5f, 0.5f, 0.6f));
 
-        if (previewItem == null)
-        {
-            previewItem = Instantiate(itemToPlace.gameObject);
-
-            var cols = previewItem.GetComponentsInChildren<Collider2D>();
-            foreach (var c in cols) c.enabled = false;
-        }
-
-        Vector3 basePos = hoveredTile.transform.position;
-        Vector3 offset = new Vector3((itemToPlace.width - 1) * 0.5f, (itemToPlace.height - 1) * 0.5f, 0f);
-        previewItem.transform.position = basePos + offset;
-
-        SetPreviewColor(previewItem, canPlace ? new Color(0.6f, 1f, 0.6f, 0.5f) : new Color(1f, 0.5f, 0.5f, 0.5f));
-
+        // clicar coloca
         if (Input.GetMouseButtonDown(0))
         {
             if (canPlace)
-                {
-                    PlaceItemAt(gridPos, tilesToOccupy);
-            }
-            else
             {
-                Debug.Log("[GridManager] Espaço ocupado ou fora do grid - não é possível posicionar.");
+                FinalizePlacement(gridPos, tiles);
             }
         }
-
     }
 
-    public void CancelSelection()
+    private void FinalizePlacement(Vector2Int gridPos, List<Tile> tiles)
     {
-        if(itemToPlace != null)
-        {
-            PlayerData.instance.AddMoney(selectedItemPrice);
-        }
-
-        if(previewItem != null)
-        {
-            Destroy(previewItem.gameObject);
-            previewItem = null;
-        }
-        itemToPlace = null;
-    }
-
-
-
-    private void SetPreviewColor(GameObject go, Color color)
-    {
-        var sprites = go.GetComponentsInChildren <SpriteRenderer>();
-        foreach (var sr in sprites)
-        {
-            Color c = sr.color;
-            sr.color = new Color(color.r, color.g, color.b, color.a);
-        }
-    }
-
-    public void PlaceItemAt(Vector2Int gridPos, List<Tile> tilesToOccupy)
-    {
-        // segurança: argumentos
-        if (tilesToOccupy == null || tilesToOccupy.Count == 0)
-        {
-            Debug.LogWarning("[GridManager] PlaceItemAt chamado com tilesToOccupy nulo ou vazio.");
-            return;
-        }
-
-        if (itemToPlace == null)
-        {
-            Debug.LogError("[GridManager] PlaceItemAt: itemToPlace é null. Não há item selecionado para colocar.");
-            return;
-        }
-
         Tile baseTile = GetTileAtPosition(gridPos);
-        if (baseTile == null)
+
+        Vector3 offset = new Vector3(
+            (itemToPlace.width - 1) * 0.5f,
+            (itemToPlace.height - 1) * 0.5f,
+            0
+        );
+
+        Vector3 pos = baseTile.transform.position + offset;
+
+        GameObject finalObj;
+
+        // caso for reposicionamento → reaproveita item real
+        if (selectedPlacedItem != null)
         {
-            Debug.LogError($"[GridManager] PlaceItemAt: baseTile é null para gridPos {gridPos}. Verifique GetTileAtPosition ou baseGridPos.");
-            return;
-        }
+            selectedPlacedItem.transform.position = pos;
 
-        // calcula posição do mundo
-        Vector3 offset = new Vector3((itemToPlace.width - 1) * 0.5f, (itemToPlace.height - 1) * 0.5f, 0f);
-        Vector3 worldPos = baseTile.transform.position + offset;
+            foreach (var t in tiles)
+                t.SetItem(selectedPlacedItem);
 
-        // instanciar
-        if (itemToPlace.gameObject == null)
-        {
-            Debug.LogError("[GridManager] PlaceItemAt: prefab do itemToPlace.gameObject é null!");
-            return;
-        }
-
-        GameObject placedGO = Instantiate(itemToPlace.gameObject, worldPos, Quaternion.identity);
-        if (placedGO == null)
-        {
-            Debug.LogError("[GridManager] PlaceItemAt: falha ao instanciar o prefab.");
-            return;
-        }
-
-        Item placedItem = placedGO.GetComponent<Item>();
-        if (placedItem == null)
-        {
-            Debug.LogError("[GridManager] PlaceItemAt: o prefab instanciado NÃO tem componente Item.");
-            Destroy(placedGO);
-            return;
-        }
-
-        // marca cada tile (verificando cada tile)
-        foreach (Tile t in tilesToOccupy)
-        {
-            if (t == null)
-            {
-                Debug.LogWarning("[GridManager] PlaceItemAt: um dos tilesToOccupy é null — pulando.");
-                continue;
-            }
-            t.SetItem(placedItem);
-        }
-
-        // salvar (se existir BuildSaveSystem)
-        Vector3 placedPos = placedGO.transform.position;
-        Quaternion placedRot = placedGO.transform.rotation;
-
-        if (BuildSaveSystem.instance != null)
-        {
-            // certifique-se que placedItem tem itemID (string não nula)
-            string id = (placedItem.itemID != null) ? placedItem.itemID : string.Empty;
-            if (string.IsNullOrEmpty(id))
-                Debug.LogWarning("[GridManager] PlaceItemAt: placedItem.itemID vazio. Salvo com ID vazio.");
-
-            BuildSaveSystem.instance.SaveItem(id, placedPos, placedRot);
+            selectedPlacedItem.gameObject.SetActive(true);
+            selectedPlacedItem = null;
         }
         else
         {
-            Debug.LogWarning("[GridManager] BuildSaveSystem.instance é null — item NÃO foi salvo.");
+            // posição de item novo
+            finalObj = Instantiate(itemToPlace.gameObject, pos, Quaternion.identity);
+            SetPreviewColor(finalObj, Color.white);
+
+            Item realItem = finalObj.GetComponent<Item>();
+
+            foreach (var t in tiles)
+                t.SetItem(realItem);
         }
 
-        // cleanup do preview
-        if (previewItem != null)
-        {
-            Destroy(previewItem);
-            previewItem = null;
-        }
-
-        // reset seleção
+        // limpa
+        Destroy(previewItem);
+        previewItem = null;
         itemToPlace = null;
-        itemToPlacePrefab = null;
-
-        Debug.Log("[GridManager] Item colocado com sucesso em " + worldPos);
+        selectedItemTiles.Clear();
     }
 
+    // ========== PREVIEW ==========
+    void PreparePreview(GameObject obj)
+    {
+        previewItem = obj;
+        DisableColliders(previewItem);
+        SetPreviewColor(previewItem, new Color(1, 1, 1, 0.5f));
+    }
+
+    void MovePreview(Tile tile, Item item)
+    {
+        Vector3 offset = new Vector3(
+            (item.width - 1) * 0.5f,
+            (item.height - 1) * 0.5f,
+            0
+        );
+
+        previewItem.transform.position = tile.transform.position + offset;
+    }
+
+    void DisableColliders(GameObject go)
+    {
+        foreach (var c in go.GetComponentsInChildren<Collider2D>())
+            c.enabled = false;
+    }
+
+    void SetPreviewColor(GameObject go, Color c)
+    {
+        foreach (var sr in go.GetComponentsInChildren<SpriteRenderer>())
+        {
+            sr.color = c;
+        }
+    }
+
+    // ========== GRID ==========
     void GenerateGrid()
     {
         _tiles = new Dictionary<Vector2, Tile>();
         for (int x = 0; x < width; x++)
-        {
             for (int y = 0; y < height; y++)
             {
-                var spawnedTile = Instantiate(_tilePrefab, new Vector3(x, y), Quaternion.identity);
-                spawnedTile.name = $"Tile {x} {y}";
-
-                var isOffset = (x % 2 == 0 && y % 2 != 0) || (x % 2 != 0 && y % 2 == 0);
-                spawnedTile.Init(isOffset);
-
-
-                _tiles[new Vector2(x, y)] = spawnedTile;
+                var t = Instantiate(_tilePrefab, new Vector3(x, y), Quaternion.identity);
+                t.name = $"Tile {x} {y}";
+                var isOffset = (x % 2 == 0 && y % 2 != 0) || (x % 2 != 0 && y % 2 == 0); 
+                t.Init(isOffset);
+                _tiles[new Vector2(x, y)] = t;
             }
-        }
 
-        _cam.transform.position = new Vector3((float)width / 2 - 0.5f, (float)height / 2 - 0.5f, -10);
+        _cam.position = new Vector3(width / 2f, height / 2f, -10);
     }
 
     public Tile GetTileAtPosition(Vector2 pos)
     {
-        if (_tiles.TryGetValue(pos, out var tile)) return tile;
-        return null;
+        _tiles.TryGetValue(pos, out Tile t);
+        return t;
     }
 
-
-
-    public void SelectItem(Item itemPreFab, int price)
-    {
-        itemToPlace = itemPreFab.gameObject.GetComponent<Item>();
-        selectedItemPrice = price;
-    }
-
-    public List<Tile> CheckTilesForItem(Vector2Int baseGridPos, int w, int h, out bool canPlace)
+    public List<Tile> CheckTilesForItem(Vector2Int basePos, int w, int h, out bool canPlace)
     {
         List<Tile> list = new List<Tile>();
         canPlace = true;
 
         for (int x = 0; x < w; x++)
-        {
             for (int y = 0; y < h; y++)
             {
-                Vector2Int check = new Vector2Int(baseGridPos.x + x, baseGridPos.y + y);
-                Tile t = GetTileAtPosition(check);
-                if(t == null || !t.isFree())
+                Tile t = GetTileAtPosition(new Vector2(basePos.x + x, basePos.y + y));
+
+                if (t == null || !t.isFree())
                 {
                     canPlace = false;
                     return list;
                 }
+
                 list.Add(t);
             }
-        }
+
         return list;
     }
-
 }

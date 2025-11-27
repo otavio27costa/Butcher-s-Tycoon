@@ -7,7 +7,14 @@ public class Tile : MonoBehaviour
     [SerializeField] private Color _baseColor, _offsetColor;
     [SerializeField] private SpriteRenderer _renderer;
     [SerializeField] private GameObject _highlight;
-    private Item placedItem;
+    public Item placedItem;
+    private Color baseColor;
+
+    private void Awake()
+    {
+        _renderer = GetComponent<SpriteRenderer>();
+        baseColor = _renderer.color;
+    }
 
     public void Init(bool isOffset)
     {
@@ -36,7 +43,7 @@ public class Tile : MonoBehaviour
         placedItem = item;
     }
     
-    public void CleatItem()
+    public void ClearItem()
     {
         placedItem = null;
     }
