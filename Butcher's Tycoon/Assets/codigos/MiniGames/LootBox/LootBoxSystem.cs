@@ -21,13 +21,13 @@ public class LootBoxSystem : MonoBehaviour
         if (score > 150)
         {
             chanceEpic += 5;
-            chanceCommom -= 5;
+            chanceCommom -= 10;
         }
 
         if (score > 300)
         {
-            chancelegendary += 2;
-            chanceCommom -= 2;
+            chancelegendary += 15;
+            chanceCommom -= 20;
         }
 
         float total = chanceCommom + chanceRare + chanceEpic + chancelegendary;

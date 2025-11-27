@@ -6,6 +6,8 @@ public class Meat : MonoBehaviour
 {
     public bool isRotten;
     public int scoreMeat = 10;
+    public GameManager gameManager;
+
 
     private void OnTriggerEnter2D(Collider2D collision)
     {

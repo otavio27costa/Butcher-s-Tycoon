@@ -13,6 +13,11 @@ public class ShopButton : MonoBehaviour
     [SerializeField] private Button buyButton;
     private ShopItem currentItem;
 
+    private void Start()
+    {
+        currentItem.currentQnt = 0;
+    }
+
     public void Setup(ShopItem item)
     {
         currentItem = item;
@@ -29,7 +34,7 @@ public class ShopButton : MonoBehaviour
         
         if(currentItem == null) return;
 
-        if(PlayerData.instance.money >= currentItem.itemPrice && currentItem.currentQnt <= currentItem.maxItem)
+        if(PlayerData.instance.money >= currentItem.itemPrice && currentItem.currentQnt < currentItem.maxItem)
         {
             PlayerData.instance.RemoveMoney(currentItem.itemPrice);
             GridManager.Instance.SelectItem(currentItem.itemPreFab.gameObject.GetComponent<Item>(), currentItem.itemPrice);

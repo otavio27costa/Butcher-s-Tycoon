@@ -18,3 +18,4 @@ MonoBehaviour:
   icon: {fileID: 0}
   itemID: 2
   maxItem: 1
+  currentQnt: 0

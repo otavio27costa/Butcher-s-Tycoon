@@ -24,7 +24,7 @@ public class MeatSpawner : MonoBehaviour
 
     void SpawnMeat()
     {
-        bool isRotten = Random.value < 0.4f;
+        bool isRotten = Random.value < 0.3f;
         GameObject prefab = isRotten
             ? rottenMeats[Random.Range(0, rottenMeats.Length)]
             : freshMeats[Random.Range(0, freshMeats.Length)];

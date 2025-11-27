@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -7,7 +8,8 @@ public class MiniGamePortal : MonoBehaviour
 {
     private bool inside = false;
     public string miniGameName;
-    public GameObject lootPanel;
+    public TMP_Text textPanel;
+
 
     private void Update()
     {
@@ -22,6 +24,16 @@ public class MiniGamePortal : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             inside = true;
+            textPanel.text = "Pressione 'E' para entrar no " + miniGameName;
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            UIInteractMessage.Instance.HideMessage();
+            textPanel.text = "";
         }
     }
 
@@ -30,5 +42,6 @@ public class MiniGamePortal : MonoBehaviour
         Time.timeScale = 1;
         //lootPanel.SetActive(false);
         SceneController.instance.CloseMinigame(miniGameName);
+        
     }
 }

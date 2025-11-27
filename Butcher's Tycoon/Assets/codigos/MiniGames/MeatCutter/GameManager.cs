@@ -17,15 +17,21 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int earnedMoney;
     [SerializeField] private TextMeshProUGUI earnedMoneyText;
 
-    private bool gameEnded = false;
+    public bool gameEnded = false;
     private int score;
     private float timeRemain;
     public Lootbox lootbox;
     public LootBoxUI lootBoxUI;
+    public float timeAnimation = 3;
+    public int animeCount = 0;
+    public bool endScene;
+    public int rewardNumb = 0;
 
     private void Awake()
     {
         Instance = this;
+        rewardNumb = 0;
+        
     }
 
     private void Start()
@@ -37,13 +43,18 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if(gameEnded) return;
-
         timeRemain -= Time.deltaTime;
         if(timeRemain <= 0 || numbLife <= 0)
         {
             timeRemain = 0;
             EndGame();
+        }
+
+        if(endScene == true)
+        {
+            GameObject meat = GameObject.FindWithTag("Meat");
+            Destroy(meat.gameObject);
+            Debug.Log("Carne excluida");
         }
 
         UpdateUI();
@@ -69,18 +80,25 @@ public class GameManager : MonoBehaviour
 
     public void EndGame()
     {
-        if(gameEnded) return;
         gameEnded = true;
-
         timeRemain = 0;
-        earnedMoney = score * coinForPoint;
-        LootReward reward = LootBoxSystem.GetRewardByScore(lootbox,score);
 
-        lootBoxUI.ShowReward(reward);
-        
+        if(animeCount < 1)
+        {
+            LootBoxUI.instance.AnimateTrigger();
+            animeCount++;
+            Debug.Log("animacao iniciada");
+        }
 
-
-        Time.timeScale = 0;
+        if(lootBoxUI.timer >= timeAnimation && rewardNumb < 1)
+        {
+            LootReward reward = LootBoxSystem.GetRewardByScore(lootbox, score);
+            lootBoxUI.ShowReward(reward);
+            endScene = true;
+            Time.timeScale = 0;
+            rewardNumb++;
+        }
+       
     }
 
 }
