@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/LootBox.unity
     guid: a4ab11154bd4bd441b1c24d79ca6a43a
+  - enabled: 1
+    path: Assets/Scenes/PreciseCutting.unity
+    guid: ab4f184e77de8d84183f1855696a7b09
   m_configObjects: {}

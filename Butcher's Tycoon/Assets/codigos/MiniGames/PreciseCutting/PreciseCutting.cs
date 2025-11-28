@@ -52,6 +52,12 @@ public class PreciseCutMinigame : MonoBehaviour
     public UnityEvent onBadCut;
     public UnityEvent onTimerEnd;
 
+    [Header("Feedback na tela")]
+    [SerializeField] private TextMeshProUGUI feedbackText;
+    [SerializeField] private Color perfectColor = Color.green;
+    [SerializeField] private Color goodColor = Color.yellow;
+    [SerializeField] private Color badColor = Color.red;
+
     private bool isDragging = false;
     private float currentCutNormalizedX = 0.5f;
 
@@ -59,6 +65,8 @@ public class PreciseCutMinigame : MonoBehaviour
     private int currentScore = 0;
     private bool canCut = true;
     private bool isMinigameOver = false;
+
+    public LootBoxUI lootBoxUI;
 
     private void Awake()
     {
@@ -79,6 +87,8 @@ public class PreciseCutMinigame : MonoBehaviour
         UpdateWeightTexts();
         UpdateScoreUI();
         UpdateTimerUI();
+        if (feedbackText != null)
+            feedbackText.text = "";
     }
 
     private void Update()
@@ -227,6 +237,13 @@ public class PreciseCutMinigame : MonoBehaviour
         {
             currentScore += scorePerfect;
 
+            // 🔹FEEDBACK NA TELA
+            if (feedbackText != null)
+            {
+                feedbackText.text = "Corte perfeito!";
+                feedbackText.color = perfectColor;
+            }
+
             // Corte perfeito encerra o minigame
             currentTime = 0f;
             UpdateTimerUI();
@@ -238,11 +255,25 @@ public class PreciseCutMinigame : MonoBehaviour
         else if (error <= goodTolerance)
         {
             currentScore += scoreGood;
+
+            if (feedbackText != null)
+            {
+                feedbackText.text = "Bom corte!";
+                feedbackText.color = goodColor;
+            }
+
             onGoodCut?.Invoke();
         }
         else
         {
             currentScore += scoreBad;
+
+            if (feedbackText != null)
+            {
+                feedbackText.text = "Corte ruim...";
+                feedbackText.color = badColor;
+            }
+
             onBadCut?.Invoke();
         }
 
