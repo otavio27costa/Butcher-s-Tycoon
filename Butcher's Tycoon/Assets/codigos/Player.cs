@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -7,7 +8,9 @@ public class Player : MonoBehaviour
     public Rigidbody2D rb;
     public int moveSpeed = 5;
     private GridManager grid;
-    [SerializeField] private Animator animator;
+    public Animator animator;
+    public TextMeshProUGUI textMeshProUGUI;
+
 
     private void Start()
     {
@@ -68,6 +71,14 @@ public class Player : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.A))
         {
             animator.SetBool("IsMove2", false);
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Maquina"))
+        {
+            textMeshProUGUI.text = ("Aperte 'E' para minigame");
         }
     }
 }

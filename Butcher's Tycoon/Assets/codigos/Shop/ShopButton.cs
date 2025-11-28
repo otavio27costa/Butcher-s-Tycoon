@@ -34,11 +34,10 @@ public class ShopButton : MonoBehaviour
         
         if(currentItem == null) return;
 
-        if(PlayerData.instance.money >= currentItem.itemPrice && currentItem.currentQnt < currentItem.maxItem)
+        if(PlayerData.instance.money >= currentItem.itemPrice)
         {
             PlayerData.instance.RemoveMoney(currentItem.itemPrice);
             GridManager.Instance.SelectItem(currentItem.itemPreFab.gameObject.GetComponent<Item>(), currentItem.itemPrice);
-            currentItem.currentQnt++;
         }
     }
 }

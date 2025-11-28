@@ -41,12 +41,13 @@ public class GameManager : MonoBehaviour
         UpdateUI();
     }
 
-    private void Update()
+    public void Update()
     {
         timeRemain -= Time.deltaTime;
         if(timeRemain <= 0 || numbLife <= 0)
         {
             timeRemain = 0;
+            lootBoxUI.timer = timeAnimation;
             EndGame();
         }
 
@@ -95,7 +96,7 @@ public class GameManager : MonoBehaviour
             LootReward reward = LootBoxSystem.GetRewardByScore(lootbox, score);
             lootBoxUI.ShowReward(reward);
             endScene = true;
-            Time.timeScale = 0;
+            //Time.timeScale = 0;
             rewardNumb++;
         }
        

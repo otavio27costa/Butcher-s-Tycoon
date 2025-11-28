@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 031fba61392baea4b9559132cfb240d2, type: 3}
-  m_Name: Maquina
+  m_Name: "Balan\xE7a"
   m_EditorClassIdentifier: 
-  itemName: Maquina
-  itemPrice: 200
-  itemPreFab: {fileID: 4964902961591600871, guid: 0c869c765aa913544833eccfef3ca755, type: 3}
-  icon: {fileID: 0}
-  itemID: 2
+  itemName: 
+  itemPrice: 100
+  itemPreFab: {fileID: 4803888475237096612, guid: 1f20372e5c15f7b4cb63565c52328e19, type: 3}
+  icon: {fileID: -1505984775, guid: bc80304ca2d2183428ea53bf31a96dd5, type: 3}
+  itemID: 
   maxItem: 1
   currentQnt: 0

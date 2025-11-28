@@ -15,12 +15,12 @@ public class GridManager : MonoBehaviour
     [SerializeField] private Transform _cam;
 
     [Header("Item System")]
-    private Item itemToPlace;               // item para colocar (novo OU reposicionado)
+    public Item itemToPlace;               // item para colocar (novo OU reposicionado)
     private GameObject previewItem;         // preview visual
     private int selectedItemPrice;
 
     // Item já colocado que está sendo reposicionado
-    private Item selectedPlacedItem = null;
+    public Item selectedPlacedItem = null;
     private List<Tile> selectedItemTiles = new List<Tile>();
 
     private Dictionary<Vector2, Tile> _tiles;
@@ -91,19 +91,57 @@ public class GridManager : MonoBehaviour
     // ========== VENDA ==========
     public void SellSelectedItem()
     {
-        if (selectedPlacedItem == null) return;
+        // 1) validações iniciais
+        if (selectedPlacedItem == null)
+        {
+            Debug.LogWarning("[GridManager] SellSelectedItem chamado mas nenhum item está selecionado.");
+            return;
+        }
 
-        foreach (var t in selectedItemTiles)
-            t.ClearItem();
+        // 2) limpar tiles ocupados (se houver)
+        if (selectedItemTiles != null && selectedItemTiles.Count > 0)
+        {
+            foreach (var t in selectedItemTiles)
+            {
+                if (t != null)
+                    t.ClearItem();
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[GridManager] SellSelectedItem: selectedItemTiles vazio ou nulo. Talvez o item não tenha sido corretamente registrado nos tiles.");
+        }
 
-        PlayerData.instance.AddMoney(selectedPlacedItem.sellValue);
+        // 3) devolver dinheiro (verifica PlayerData)
+        if (PlayerData.instance != null)
+        {
+            PlayerData.instance.AddMoney(selectedPlacedItem.sellValue);
+            Debug.Log("[GridManager] Dinheiro adicionado: " + selectedPlacedItem.sellValue + ". Saldo agora: " + PlayerData.instance.money);
+        }
+        else
+        {
+            Debug.LogError("[GridManager] PlayerData.instance é null! Não foi possível devolver dinheiro.");
+        }
 
-        Destroy(selectedPlacedItem.gameObject);
-        selectedPlacedItem = null;
+        // 5) destruir o objeto do mundo
+        GameObject toDestroy = selectedPlacedItem.gameObject;
+        selectedPlacedItem.currentQnt--;
+        selectedPlacedItem = null; // limpa a referência antes de destruir para evitar usos posteriores
+        Destroy(toDestroy);
+        Debug.Log("[GridManager] Item destruído.");
+
+        // 6) limpar estado interno e UI
         selectedItemTiles.Clear();
+        CancelSelection(); // garante que preview e seleção fiquem limpos
 
-        CancelSelection();
-        ItemSelectionUI.Instance.Close();
+        if (ItemSelectionUI.Instance != null)
+            ItemSelectionUI.Instance.Close();
+
+        // 7) remover qualquer destaque residual
+        // (assumindo que HighlightItem(item, bool) exista)
+        // HighlightItem(selectedPlacedItem, false); -> não pode chamar depois de null
+
+        Debug.Log("[GridManager] Venda concluída.");
     }
 
     // ========== CANCELAR ==========
@@ -125,6 +163,7 @@ public class GridManager : MonoBehaviour
 
         previewItem = null;
         itemToPlace = null;
+        selectedPlacedItem = null;
         ItemSelectionUI.Instance.Close();
     }
 
@@ -176,11 +215,12 @@ public class GridManager : MonoBehaviour
             new Color(1f, 0.5f, 0.5f, 0.6f));
 
         // clicar coloca
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && itemToPlace.currentQnt < itemToPlace.maxQnt)
         {
             if (canPlace)
             {
                 FinalizePlacement(gridPos, tiles);
+                itemToPlace.currentQnt++;
             }
         }
     }

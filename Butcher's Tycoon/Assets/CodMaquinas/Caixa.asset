@@ -10,11 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 031fba61392baea4b9559132cfb240d2, type: 3}
-  m_Name: Mesa
+  m_Name: Caixa
   m_EditorClassIdentifier: 
-  itemName: Mesa
-  itemPrice: 300
-  itemPreFab: {fileID: 8634755954099352743, guid: 5c411b3d21cc23646b3c048a5eb55b7b, type: 3}
-  icon: {fileID: 0}
-  itemID: 3
-  maxItem: 2
+  itemName: Caixa
+  itemPrice: 200
+  itemPreFab: {fileID: 4013022251224279852, guid: d5fd9f621f9f59844b5f2f0a73ad31f0, type: 3}
+  icon: {fileID: -2054493208, guid: 2fb2fd01612e84542856295eb030d624, type: 3}
+  itemID: 
+  maxItem: 1
+  currentQnt: 0

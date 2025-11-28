@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class MiniGamePortal : MonoBehaviour
 {
-    private bool inside = false;
+    public bool inside = false;
     public string miniGameName;
     public TMP_Text textPanel;
 
@@ -25,5 +25,13 @@ public class MiniGamePortal : MonoBehaviour
         //lootPanel.SetActive(false);
         SceneController.instance.CloseMinigame(miniGameName);
         
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            inside = true;
+        }
     }
 }
